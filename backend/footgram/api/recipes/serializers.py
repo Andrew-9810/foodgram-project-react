@@ -6,7 +6,7 @@ from django.core import validators
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import AmountIngredient, Recipe, Tag, Ingredient
+from recipes import models
 
 
 class AmountIngredientSerializer(rest_framework.serializers.ModelSerializer):
@@ -26,7 +26,7 @@ class AmountIngredientSerializer(rest_framework.serializers.ModelSerializer):
     )
 
     class Meta:
-        model = AmountIngredient
+        model = models.AmountIngredient
         fields = ('id', 'amount')
 
 
@@ -41,7 +41,7 @@ class FullAmountIngredientSerializer(
     )
 
     class Meta:
-        model = AmountIngredient
+        model = models.AmountIngredient
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
@@ -55,7 +55,7 @@ class RecipeSerializer(rest_framework.serializers.ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
 
     class Meta:
-        model = Recipe
+        model = models.Recipe
         fields = (
             'id',
             'tags',
@@ -70,7 +70,7 @@ class RecipeSerializer(rest_framework.serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        ingredients = AmountIngredient.objects.filter(recipe=obj)
+        ingredients = models.AmountIngredient.objects.filter(recipe=obj)
         serializer = FullAmountIngredientSerializer(ingredients, many=True)
         return serializer.data
 
@@ -95,7 +95,7 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     """Сериализатор создания и обновления рецепта."""
     tags = rest_framework.serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=Tag.objects.all()
+        queryset=models.Tag.objects.all()
     )
     ingredients = AmountIngredientSerializer(many=True)
     cooking_time = rest_framework.serializers.IntegerField(
@@ -112,7 +112,7 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     )
 
     class Meta:
-        model = Recipe
+        model = models.Recipe
         fields = (
             'id',
             'tags',
@@ -180,25 +180,25 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         for ingredient in ingredients:
             amount = ingredient['amount']
             try:
-                ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
+                ingredient = get_object_or_404(models.Ingredient, pk=ingredient['id'])
             except Http404:
                 raise rest_framework.exceptions.ValidationError(
                     'Указан несуществующий ингредиент.'
                 )
 
-            obj_amount = AmountIngredient(
+            obj_amount = models.AmountIngredient(
                 recipe=recipe,
                 ingredient=ingredient,
                 amount=amount
             )
             all_obj_amount.append(obj_amount)
-        AmountIngredient.objects.bulk_create(all_obj_amount)
+        models.AmountIngredient.objects.bulk_create(all_obj_amount)
 
     def create(self, validated_data):
         author = self.context.get('request').user
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(author=author, **validated_data)
+        recipe = models.Recipe.objects.create(author=author, **validated_data)
         recipe.tags.set(tags)
         self.ingredients_create(recipe, ingredients)
         return recipe
