@@ -1,8 +1,11 @@
 from django.contrib import admin
-from recipes import models
+
+from recipes.models import (
+    Ingredient, Tag, AmountIngredient, Recipe, ShoppingList, FavoriteRecipe
+)
 
 
-@admin.register(models.Ingredient)
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Отображение модели Ингредиентов в панели администратора."""
     list_display = (
@@ -14,7 +17,7 @@ class IngredientAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(models.Tag)
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     """Отображение модели Тег в панели администратора."""
     list_display = (
@@ -29,11 +32,11 @@ class TagAdmin(admin.ModelAdmin):
 
 class AmountIngredientInline(admin.TabularInline):
     """Отображение модели Ингредиентов в панели администратора."""
-    model = models.AmountIngredient
+    model = AmountIngredient
     min_num = 1
 
 
-@admin.register(models.Recipe)
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """Отображение модели Рецепты в панели администратора."""
     inlines = [
@@ -55,7 +58,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return instance.favorite.count()
 
 
-@admin.register(models.ShoppingList)
+@admin.register(ShoppingList)
 class ShoppingListAdmin(admin.ModelAdmin):
     """Отображение модели Корзина в панели администратора."""
     list_display = (
@@ -67,7 +70,7 @@ class ShoppingListAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(models.FavoriteRecipe)
+@admin.register(FavoriteRecipe)
 class FavoriteAdmin(admin.ModelAdmin):
     """Отображение модели Избранное в панели администратора."""
     list_display = (
