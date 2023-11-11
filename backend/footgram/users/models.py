@@ -3,6 +3,7 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
+    """Кастомная модель пользователя."""
     email = models.EmailField(
         max_length=254,
         unique=True,
@@ -40,6 +41,7 @@ class CustomUser(AbstractUser):
 
 
 class Follow(models.Model):
+    """Модель Подписчиков."""
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,

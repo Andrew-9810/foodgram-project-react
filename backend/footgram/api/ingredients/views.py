@@ -6,6 +6,7 @@ from .serializers import IngredientSerializer
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет Ингридиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
 

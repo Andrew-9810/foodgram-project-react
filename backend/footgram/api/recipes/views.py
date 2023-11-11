@@ -6,15 +6,17 @@ from rest_framework import exceptions, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from recipes.models import (AmountIngredient, FavoriteRecipe, Recipe,
-                            ShoppingList, Ingredient)
-from ..users.serializers import ShortRecipeSerializer
-from ..utils.paginators import PageLimitPaginator
+from recipes.models import (
+    AmountIngredient, FavoriteRecipe, Recipe, ShoppingList, Ingredient
+)
+from api.users.serializers import ShortRecipeSerializer
+from api.utils.paginators import PageLimitPaginator
 from .filters import RecipeFilter
 from .serializers import CreateAndUpdateRecipeSerializer, RecipeSerializer
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет Рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = PageLimitPaginator

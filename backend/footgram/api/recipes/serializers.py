@@ -5,8 +5,8 @@ from rest_framework import exceptions, serializers
 
 from recipes.models import AmountIngredient, Recipe, Tag, Ingredient
 
-from ..tags.serializers import TagSerializer
-from ..users.serializers import CustomUserSerializer
+from api.tags.serializers import TagSerializer
+from api.users.serializers import CustomUserSerializer
 
 
 class AmountIngredientSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class AmountIngredientSerializer(serializers.ModelSerializer):
 
 
 class FullAmountIngredientSerializer(serializers.ModelSerializer):
-    """"""
+    """Сериализатор Суммы Ингридиетов."""
     id = serializers.IntegerField(source='ingredient.id')
     name = serializers.CharField(source='ingredient.name')
     measurement_unit = serializers.CharField(
@@ -40,6 +40,7 @@ class FullAmountIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор Рецептов."""
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     ingredients = serializers.SerializerMethodField()
@@ -128,13 +129,14 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         return value
 
     def validate_ingredients(self, value):
-        """Проверка выбора неодинаковых ингредиетов."""
+        """Проверка выбора одинаковых ингредиетов."""
         if not value:
             raise exceptions.ValidationError(
                 'Нужно добавить хотя бы один ингредиент.'
             )
-        # !!!!!
-        ingredients = [item['id'] for item in value]
+        ingredients = []
+        for item in value:
+            ingredients.append(item['id'])
         for ingredient in ingredients:
             if ingredients.count(ingredient) > 1:
                 raise exceptions.ValidationError(
