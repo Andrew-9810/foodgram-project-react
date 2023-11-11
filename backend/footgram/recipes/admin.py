@@ -6,6 +6,7 @@ from .models import (
 
 
 class IngredientAdmin(admin.ModelAdmin):
+    """Отображение модели Ингредиентов в панели администратора."""
     list_display = (
         'name',
         'measurement_unit'
@@ -15,10 +16,8 @@ class IngredientAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(Ingredient, IngredientAdmin)
-
-
 class TagAdmin(admin.ModelAdmin):
+    """Отображение модели Тег в панели администратора."""
     list_display = (
         'name',
         'color',
@@ -29,14 +28,13 @@ class TagAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(Tag, TagAdmin)
-
-
 class AmountIngredientInline(admin.TabularInline):
+    """!!!!Отображение модели Ингредиентов в панели администратора."""
     model = AmountIngredient
 
 
 class RecipeAdmin(admin.ModelAdmin):
+    """Отображение модели Рецепты в панели администратора."""
     inlines = [
         AmountIngredientInline,
     ]
@@ -53,10 +51,11 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def in_favorites(self, instance):
         return instance.favorite_recipes.count()
-    in_favorites.short_description = 'добавлен в избранное'
+    in_favorites.short_description = 'Добавлен в избранное'
 
 
 class ShoppingListAdmin(admin.ModelAdmin):
+    """Отображение модели Корзина в панели администратора."""
     list_display = (
         'user',
         'recipe'
@@ -67,6 +66,7 @@ class ShoppingListAdmin(admin.ModelAdmin):
 
 
 class FavoriteAdmin(admin.ModelAdmin):
+    """Отображение модели Избранное в панели администратора."""
     list_display = (
         'user',
         'recipe'
@@ -76,6 +76,8 @@ class FavoriteAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(FavoriteRecipe, FavoriteAdmin)
 admin.site.register(ShoppingList, ShoppingListAdmin)

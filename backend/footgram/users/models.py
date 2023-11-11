@@ -6,15 +6,15 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
-        verbose_name='filed_verbose_name_Электронная почта'
+        verbose_name='Электронная почта'
     )
     first_name = models.CharField(
         max_length=150,
-        verbose_name='filed_verbose_name_Имя'
+        verbose_name='Имя'
     )
     last_name = models.CharField(
         max_length=150,
-        verbose_name='filed_verbose_name_Фамилия'
+        verbose_name='Фамилия'
     )
     # REQUIRED_FIELDS должен содержать все обязательные поля в вашей пользовательской модели,
     # но не должен содержать USERNAME_FIELD или, так password
@@ -32,8 +32,8 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
-        verbose_name = "verbose_name_Пользователь"
-        verbose_name_plural = "verbose_name_plural_Пользователи"
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
