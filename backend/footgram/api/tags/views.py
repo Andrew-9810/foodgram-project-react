@@ -5,5 +5,6 @@ from .serializers import TagSerializer
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет Тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer

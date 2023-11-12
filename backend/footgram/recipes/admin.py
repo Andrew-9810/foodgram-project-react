@@ -29,7 +29,7 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class AmountIngredientInline(admin.TabularInline):
-    """!!!!Отображение модели Ингредиентов в панели администратора."""
+    """Отображение модели Ингредиентов в панели администратора."""
     model = AmountIngredient
 
 

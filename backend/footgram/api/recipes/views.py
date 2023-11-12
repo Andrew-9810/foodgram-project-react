@@ -33,18 +33,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['POST'])
     # Разрешена работа с одним объектом(не с коллекцией) по методу пост
     def favorite(self, request, pk=None):
-        """Определение """
+        """Определение рецепта в избранном."""
         user = self.request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-        # Фильтруем объекты чтобы убедиться что пользователь не добавлял рецепт.
-        # Попробовать добавить, должна выпасть ошибка что поле не уникально
-        # Сообщение Рецепт добавлен в избранное
-        # использовать елсе
         if FavoriteRecipe.objects.filter(
                 user=user,
                 recipe=recipe
         ).exists():
-            raise exceptions.ValidationError('Рецепт уже в избранном.')
+            raise exceptions.ValidationError('Рецепт добавлен в избранное.')
         FavoriteRecipe.objects.create(user=user, recipe=recipe)
         serializer = ShortRecipeSerializer(
             recipe,
@@ -54,6 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk=None):
+        """Удаление рецепта из избранного."""
         user = self.request.user
         recipe = get_object_or_404(Recipe, pk=pk)
         if not FavoriteRecipe.objects.filter(
@@ -61,7 +58,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=recipe
         ).exists():
             raise exceptions.ValidationError(
-                'Рецепта нет в избранном, либо он уже удален.'
+                'Рецепт удален из избраного!'
             )
         favorite = get_object_or_404(FavoriteRecipe,
                                      user=user, recipe=recipe)
@@ -70,6 +67,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['POST'])
     def shopping_cart(self, request, pk=None):
+        """Добавление рецепта в список покупок."""
         user = self.request.user
         recipe = get_object_or_404(Recipe, pk=pk)
         if ShoppingList.objects.filter(
@@ -77,7 +75,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=recipe
         ).exists():
             raise exceptions.ValidationError(
-                'Рецепт уже в списке покупок.'
+                'Рецепт в списке покупок!'
             )
         ShoppingList.objects.create(user=user, recipe=recipe)
         serializer = ShortRecipeSerializer(
@@ -88,6 +86,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk=None):
+        """Удаление рецепта из списка покупок."""
         user = self.request.user
         recipe = get_object_or_404(Recipe, pk=pk)
         if not ShoppingList.objects.filter(
@@ -95,7 +94,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=recipe
         ).exists():
             raise exceptions.ValidationError(
-                'Рецепта нет в списке покупок, либо он уже удален.'
+                'Рецепта удален из списка покупок!'
             )
         shopping_cart = get_object_or_404(
             ShoppingList,
@@ -111,8 +110,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
     )
     def download_shopping_cart(self, request):
+        """Загрузить список покупок."""
         shopping_cart = ShoppingList.objects.filter(user=self.request.user)
-        recipes = [item.recipe.id for item in shopping_cart]
+        recipes = []
+        for item in shopping_cart:
+            recipes.append(item.recipe.id)
         shopping_list = AmountIngredient.objects.filter(
             recipe__in=recipes
         ).values(

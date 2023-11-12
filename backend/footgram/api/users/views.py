@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from users.models import Follow
-from ..utils.paginators import PageLimitPaginator
+from api.utils.paginators import PageLimitPaginator
 from .serializers import FollowSerializer
 
 User = get_user_model()
@@ -34,11 +34,11 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=id)
         if user == author:
             return Response({'errors':
-                            'Вы не можете подписаться на себя.'},
+                            'Недопустимо подписаться на себя.'},
                             status=status.HTTP_400_BAD_REQUEST)
         if Follow.objects.filter(user=user, author=author).exists():
             return Response({'errors':
-                            'Вы уже подписались на этого автора.'},
+                            'Подписка на автора выполнена!'},
                             status=status.HTTP_400_BAD_REQUEST)
         Follow.objects.create(user=user, author=author)
         serializer = FollowSerializer(author,
@@ -51,7 +51,9 @@ class CustomUserViewSet(UserViewSet):
         user = request.user
         author = get_object_or_404(User, id=id)
         if not Follow.objects.filter(user=user, author=author).exists():
-            return Response({'errors': 'Нет такой подписки'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'Подписка не найдена!'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         Follow.objects.get(user=user, author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

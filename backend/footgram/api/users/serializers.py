@@ -23,7 +23,6 @@ class CustomCreateUserSerializer(UserCreateSerializer):
 
 class CustomUserSerializer(UserSerializer):
     """Сериализатор пользователя, унаследовано от djoser."""
-    # Вычисляемое поле подписок
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -43,10 +42,6 @@ class CustomUserSerializer(UserSerializer):
          на пользователя по которому производим запрос."""
 
         if self.context.get('request').user.is_authenticated:
-            # если Пользователь аутендефицирован то обращаемся по related_name к  модели подписок
-            # в качестве obj выступает пользователь по которому производим запрос
-            # в качестве user выступает текущий пользователь
-            # Существует ли запись где автор Вася Пупкин, а подписчик Тест
             return obj.following.filter(
                 user=self.context.get('request').user
             ).exists()
@@ -66,9 +61,7 @@ class FollowSerializer(CustomUserSerializer):
             'first_name',
             'last_name',
             'is_subscribed',
-            # Список объектов текущей страницы
             'recipes',
-            # Общее количество объектов в базе
             'recipes_count'
         )
 
