@@ -2,7 +2,7 @@ name: Main footgram workflow
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   test_flake8:
     runs-on: ubuntu-latest
