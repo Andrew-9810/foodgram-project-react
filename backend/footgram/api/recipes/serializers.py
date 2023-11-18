@@ -2,9 +2,7 @@ from django.core.validators import MinValueValidator
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import exceptions, serializers
-
 from recipes.models import AmountIngredient, Recipe, Tag, Ingredient
-
 from api.tags.serializers import TagSerializer
 from api.users.serializers import CustomUserSerializer
 
