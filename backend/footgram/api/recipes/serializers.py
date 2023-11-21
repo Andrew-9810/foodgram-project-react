@@ -142,6 +142,15 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
                 )
         return value
 
+    def validate_image(self, value):
+        """Проверка выбора одинаковых ингредиетов."""
+        if not value:
+            raise exceptions.ValidationError(
+                'Нужно добавить фото рецепта.'
+            )
+        return value
+
+
     def create(self, validated_data):
         author = self.context.get('request').user
         tags = validated_data.pop('tags')
