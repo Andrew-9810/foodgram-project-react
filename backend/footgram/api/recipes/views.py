@@ -34,8 +34,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['POST'])
     def favorite(self, request, pk=None):
-        """Определение рецепта в избранном."""
+        """Добавление рецепта в избранное."""
         user = self.request.user
+        if not Recipe.objects.filter(pk=pk).exists():
+            raise exceptions.ValidationError(
+                'Попытка добавить несуществующий рецепт в избранное.'
+            )
         recipe = get_object_or_404(Recipe, pk=pk)
         if FavoriteRecipe.objects.filter(
                 user=user,
@@ -70,6 +74,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         """Добавление рецепта в список покупок."""
         user = self.request.user
+        if not Recipe.objects.filter(pk=pk).exists():
+            raise exceptions.ValidationError(
+                'Попытка добавить несуществующий рецепт в избранное.'
+            )
         recipe = get_object_or_404(Recipe, pk=pk)
         if ShoppingList.objects.filter(
                 user=user,
