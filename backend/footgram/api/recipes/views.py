@@ -13,6 +13,7 @@ from api.utils.paginators import PageLimitPaginator
 
 from .filters import RecipeFilter
 from .serializers import CreateAndUpdateRecipeSerializer, RecipeSerializer
+from .permissions import OwnerOrReadOnly, ReadOnly
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -20,7 +21,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = PageLimitPaginator
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (OwnerOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -31,7 +33,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeSerializer
 
     @action(detail=True, methods=['POST'])
-    # Разрешена работа с одним объектом(не с коллекцией) по методу пост
     def favorite(self, request, pk=None):
         """Определение рецепта в избранном."""
         user = self.request.user
@@ -135,3 +136,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'attachment; filename=shopping-list.txt'
         )
         return response
+
+    def get_permissions(self):
+        """Выбор ограничения."""
+        if self.action == 'retrieve':
+            return (ReadOnly(),)
+        return super().get_permissions()
