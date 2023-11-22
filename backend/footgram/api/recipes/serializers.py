@@ -124,6 +124,13 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             raise exceptions.ValidationError(
                 'Нужно добавить хотя бы один тег.'
             )
+        tegs = []
+        for val in value:
+            tegs.append(val.id)
+            if tegs.count(val.id) > 1:
+                raise exceptions.ValidationError(
+                    'У рецепта не может быть два одинаковых тега.'
+                )
         return value
 
     def validate_ingredients(self, value):
@@ -132,6 +139,13 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             raise exceptions.ValidationError(
                 'Нужно добавить хотя бы один ингредиент.'
             )
+        print(value[0]['id'])
+        for val in value:
+            if not Ingredient.objects.filter(id=val['id']).exists():
+                raise exceptions.ValidationError(
+                    'Указан несуществующий ингредиент.'
+                )
+
         ingredients = []
         for item in value:
             ingredients.append(item['id'])
