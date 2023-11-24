@@ -68,7 +68,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'footgram.wsgi.application'
 
-#
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',

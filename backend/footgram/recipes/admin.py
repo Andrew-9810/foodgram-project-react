@@ -5,6 +5,7 @@ from .models import (
 )
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     """Отображение модели Ингредиентов в панели администратора."""
     list_display = (
@@ -16,6 +17,7 @@ class IngredientAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     """Отображение модели Тег в панели администратора."""
     list_display = (
@@ -33,6 +35,7 @@ class AmountIngredientInline(admin.TabularInline):
     model = AmountIngredient
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """Отображение модели Рецепты в панели администратора."""
     inlines = [
@@ -54,6 +57,7 @@ class RecipeAdmin(admin.ModelAdmin):
     in_favorites.short_description = 'Добавлен в избранное'
 
 
+@admin.register(ShoppingList)
 class ShoppingListAdmin(admin.ModelAdmin):
     """Отображение модели Корзина в панели администратора."""
     list_display = (
@@ -65,6 +69,7 @@ class ShoppingListAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+@admin.register(FavoriteRecipe)
 class FavoriteAdmin(admin.ModelAdmin):
     """Отображение модели Избранное в панели администратора."""
     list_display = (
@@ -74,10 +79,3 @@ class FavoriteAdmin(admin.ModelAdmin):
     list_filter = ('user', 'recipe')
     search_fields = ('user',)
     empty_value_display = '-пусто-'
-
-
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Tag, TagAdmin)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(FavoriteRecipe, FavoriteAdmin)
-admin.site.register(ShoppingList, ShoppingListAdmin)
