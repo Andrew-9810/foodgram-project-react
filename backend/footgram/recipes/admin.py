@@ -33,6 +33,7 @@ class TagAdmin(admin.ModelAdmin):
 class AmountIngredientInline(admin.TabularInline):
     """Отображение модели Ингредиентов в панели администратора."""
     model = AmountIngredient
+    min_num = 1
 
 
 @admin.register(Recipe)
@@ -52,9 +53,9 @@ class RecipeAdmin(admin.ModelAdmin):
     filter_horizontal = ('tags',)
     empty_value_display = '-пусто-'
 
+    @admin.display(description='Добавлений в избранное')
     def in_favorites(self, instance):
-        return instance.favorite_recipes.count()
-    in_favorites.short_description = 'Добавлен в избранное'
+        return instance.favorite.count()
 
 
 @admin.register(ShoppingList)

@@ -69,7 +69,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         if (
             self.context['request'].user.is_authenticated
-            and obj.favorite_recipes.filter(
+            and obj.favorite.filter(
                 user=self.context['request'].user
             ).exists()
         ):
@@ -79,7 +79,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         if (
             self.context['request'].user.is_authenticated
-            and obj.shopping_list_recipes.filter(
+            and obj.shopping_list.filter(
                 user=self.context['request'].user
             ).exists()
         ):
