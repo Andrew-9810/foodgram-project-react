@@ -13,6 +13,12 @@ DEBUG = os.getenv('DEBUG', default='False').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
 
+MAX_LENGTH_50 = 50
+MAX_LENGTH_150 = 150
+MAX_LENGTH_200 = 200
+MAX_LENGTH_254 = 254
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

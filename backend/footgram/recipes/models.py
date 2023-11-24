@@ -2,6 +2,7 @@ from colorfield.fields import ColorField
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
+from footgram.settings import MAX_LENGTH_50, MAX_LENGTH_200
 
 User = get_user_model()
 
@@ -10,11 +11,11 @@ class Ingredient(models.Model):
     """Модель Ингредиентов."""
     name = models.CharField(
         verbose_name='Ингредиент',
-        max_length=200
+        max_length=MAX_LENGTH_200
     )
     measurement_unit = models.CharField(
         verbose_name='Единицы измерения ингредиента',
-        max_length=50
+        max_length=MAX_LENGTH_50
     )
 
     class Meta:
@@ -30,7 +31,7 @@ class Tag(models.Model):
     """Модель Теги."""
     name = models.CharField(
         verbose_name='Название',
-        max_length=50,
+        max_length=MAX_LENGTH_50,
         unique=True
     )
     color = ColorField(
@@ -60,7 +61,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         verbose_name='Название',
-        max_length=200
+        max_length=MAX_LENGTH_200
     )
     image = models.ImageField(
         verbose_name='Изображение',
