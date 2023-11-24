@@ -7,6 +7,7 @@ from .models import Follow
 User = get_user_model()
 
 
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
     list_display = (
         'username',
@@ -19,6 +20,7 @@ class CustomUserAdmin(UserAdmin):
     empty_value_display = '-пусто-'
 
 
+@admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = (
         'user',
@@ -27,7 +29,3 @@ class FollowAdmin(admin.ModelAdmin):
     list_filter = ('user', 'author')
     search_fields = ('user',)
     empty_value_display = '-пусто-'
-
-
-admin.site.register(User, CustomUserAdmin)
-admin.site.register(Follow, FollowAdmin)
