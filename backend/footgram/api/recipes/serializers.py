@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import exceptions, serializers
@@ -6,6 +6,7 @@ from rest_framework import exceptions, serializers
 from recipes.models import AmountIngredient, Recipe, Tag, Ingredient
 from api.tags.serializers import TagSerializer
 from api.users.serializers import CustomUserSerializer
+from footgram.settings import MIN_VALUE_VALIDATOR, MAX_VALUE_VALIDATOR
 
 
 class AmountIngredientSerializer(serializers.ModelSerializer):
@@ -14,9 +15,13 @@ class AmountIngredientSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField(
         validators=(
             MinValueValidator(
-                1,
-                message='Количество ингредиента должно быть не менее 1.'
+                MIN_VALUE_VALIDATOR,
+                message='Количество ингредиентов должно быть не менее 1.'
             ),
+            MaxValueValidator(
+                MAX_VALUE_VALIDATOR,
+                message='Превышен лимит количества ингредиентов.'
+            )
         )
     )
 
@@ -94,9 +99,13 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     cooking_time = serializers.IntegerField(
         validators=(
             MinValueValidator(
-                1,
+                MIN_VALUE_VALIDATOR,
                 message='Время приготовления должно быть не менее 1.'
             ),
+            MaxValueValidator(
+                MAX_VALUE_VALIDATOR,
+                message='Превышен лимит времени приготовления.'
+            )
         )
     )
 
@@ -121,13 +130,10 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             raise exceptions.ValidationError(
                 'Нужно добавить хотя бы один тег.'
             )
-        tegs = []
-        for val in value:
-            tegs.append(val.id)
-            if tegs.count(val.id) > 1:
-                raise exceptions.ValidationError(
-                    'У рецепта не может быть два одинаковых тега.'
-                )
+        if len(value) != len(set(value)):
+            raise exceptions.ValidationError(
+                'У рецепта не может быть два одинаковых тега.'
+            )
         return value
 
     def validate_ingredients(self, value):
@@ -141,15 +147,13 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
                 raise exceptions.ValidationError(
                     'Указан несуществующий ингредиент.'
                 )
-
         ingredients = []
         for item in value:
             ingredients.append(item['id'])
-        for ingredient in ingredients:
-            if ingredients.count(ingredient) > 1:
-                raise exceptions.ValidationError(
-                    'У рецепта не может быть два одинаковых ингредиента.'
-                )
+        if len(ingredients) != len(set(ingredients)):
+            raise exceptions.ValidationError(
+                'У рецепта не может быть два одинаковых ингредиента.'
+            )
         return value
 
     def validate_image(self, value):
