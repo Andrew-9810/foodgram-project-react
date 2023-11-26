@@ -2,6 +2,7 @@ from django.core.validators import MinValueValidator
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import exceptions, serializers
+
 from recipes.models import AmountIngredient, Recipe, Tag, Ingredient
 from api.tags.serializers import TagSerializer
 from api.users.serializers import CustomUserSerializer
@@ -67,24 +68,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_is_favorited(self, obj):
-        if (
+        return (
             self.context['request'].user.is_authenticated
             and obj.favorite.filter(
                 user=self.context['request'].user
             ).exists()
-        ):
-            return True
-        return False
+        )
 
     def get_is_in_shopping_cart(self, obj):
-        if (
+        return (
             self.context['request'].user.is_authenticated
             and obj.shopping_list.filter(
                 user=self.context['request'].user
             ).exists()
-        ):
-            return True
-        return False
+        )
 
 
 class CreateAndUpdateRecipeSerializer(RecipeSerializer):
