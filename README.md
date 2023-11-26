@@ -17,7 +17,6 @@
 POSTGRES_DB=foot
 POSTGRES_USER=foot_user
 POSTGRES_PASSWORD=foot_password
-DB_NAME=foot
 DB_HOST=db
 DB_PORT=5432
 DEBUG=False
