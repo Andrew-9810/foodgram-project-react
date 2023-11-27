@@ -1,4 +1,5 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import exceptions, serializers
@@ -142,11 +143,6 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             raise exceptions.ValidationError(
                 'Нужно добавить хотя бы один ингредиент.'
             )
-        for val in value:
-            if not Ingredient.objects.filter(id=val['id']).exists():
-                raise exceptions.ValidationError(
-                    'Указан несуществующий ингредиент.'
-                )
         ingredients = []
         for item in value:
             ingredients.append(item['id'])
@@ -182,7 +178,12 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         all_obj_amount = []
         for ingredient in ingredients:
             amount = ingredient['amount']
-            ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
+            try:
+                ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
+            except Http404:
+                raise exceptions.ValidationError(
+                    'Указан несуществующий ингредиент.'
+                )
 
             obj_amount = AmountIngredient(
                 recipe=recipe,
