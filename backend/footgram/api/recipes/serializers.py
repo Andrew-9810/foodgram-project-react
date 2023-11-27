@@ -164,9 +164,21 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             )
         return value
 
+    def validate(self, data):
+        tags = data.get('tags', None)
+        ingredients = data.get('ingredients', None)
+        if tags is None:
+            raise exceptions.ValidationError(
+                'Нужно добавить тег рецепта.'
+            )
+        if ingredients is None:
+            raise exceptions.ValidationError(
+                'Нужно добавить ингридиент рецепта.'
+            )
+        return data
+
     def create(self, validated_data):
         author = self.context.get('request').user
-        # Уберём список tegs из словаря validated_data и сохраним его
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
 
@@ -184,18 +196,11 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        tags = validated_data.pop('tags', None)
-        if tags is None:
-            raise exceptions.ValidationError(
-                'Нужно добавить тег рецепта.'
-            )
+        tags = validated_data.pop('tags')
+        instance.tags.clear()
         instance.tags.set(tags)
 
-        ingredients = validated_data.pop('ingredients', None)
-        if ingredients is None:
-            raise exceptions.ValidationError(
-                'Нужно добавить ингридиент рецепта.'
-            )
+        ingredients = validated_data.pop('ingredients')
         instance.ingredients.clear()
 
         for ingredient in ingredients:

@@ -21,7 +21,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = PageLimitPaginator
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     permission_classes = (OwnerOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
