@@ -177,41 +177,37 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             )
         return data
 
-    def create(self, validated_data):
-        author = self.context.get('request').user
-        tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredients')
-
-        recipe = Recipe.objects.create(author=author, **validated_data)
-        recipe.tags.set(tags)
+    def ingredients_create(self, recipe, ingredients):
+        """Создание ингредиентов."""
+        all_obj_amount = []
         for ingredient in ingredients:
             amount = ingredient['amount']
             ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
 
-            AmountIngredient.objects.create(
+            obj_amount = AmountIngredient(
                 recipe=recipe,
                 ingredient=ingredient,
                 amount=amount
             )
+            all_obj_amount.append(obj_amount)
+        AmountIngredient.objects.bulk_create(all_obj_amount)
+
+    def create(self, validated_data):
+        author = self.context.get('request').user
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(author=author, **validated_data)
+        recipe.tags.set(tags)
+        self.ingredients_create(recipe, ingredients)
         return recipe
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags')
         instance.tags.clear()
         instance.tags.set(tags)
-
         ingredients = validated_data.pop('ingredients')
         instance.ingredients.clear()
-
-        for ingredient in ingredients:
-            amount = ingredient['amount']
-            ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
-
-            AmountIngredient.objects.update_or_create(
-                recipe=instance,
-                ingredient=ingredient,
-                defaults={'amount': amount}
-            )
+        self.ingredients_create(instance, ingredients)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
