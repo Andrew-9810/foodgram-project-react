@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from recipes.models import Recipe
+
+from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 
 User = get_user_model()
 
@@ -77,14 +78,18 @@ class FollowSerializer(CustomUserSerializer):
         """Получение колличесва рецептов."""
         return obj.recipes.count()
 
+    # def get_email(self, value):
+    #     print(f'#### {value}')
+    #     return value
 
-class ShortRecipeSerializer(serializers.ModelSerializer):
-    """Рецепты автора, сокращеннный вариант."""
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'name',
-            'image',
-            'cooking_time'
-        )
+
+# class ShortRecipeSerializer(serializers.ModelSerializer):
+#     """Рецепты автора, сокращеннный вариант."""
+#     class Meta:
+#         model = Recipe
+#         fields = (
+#             'id',
+#             'name',
+#             'image',
+#             'cooking_time'
+#         )

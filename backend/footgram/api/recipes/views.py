@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from recipes.models import (
     AmountIngredient, FavoriteRecipe, Recipe, ShoppingList, Ingredient
 )
-from api.users.serializers import ShortRecipeSerializer
+from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from api.utils.paginators import PageLimitPaginator
 
 from .filters import RecipeFilter
