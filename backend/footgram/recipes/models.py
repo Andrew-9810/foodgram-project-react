@@ -5,8 +5,6 @@ from django.db import models
 from footgram.settings import (
     MAX_LENGTH_200, MAX_LENGTH_50, MAX_VALUE_VALIDATOR, MIN_VALUE_VALIDATOR
 )
-
-
 User = get_user_model()
 
 
