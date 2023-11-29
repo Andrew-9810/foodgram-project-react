@@ -5,15 +5,18 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from recipes.models import (
-    AmountIngredient, FavoriteRecipe, Recipe, ShoppingList, Ingredient
+
+from api.recipes.filters import RecipeFilter
+from api.recipes.permissions import OwnerOrReadOnly, ReadOnly
+from api.recipes.serializers import (
+    CreateAndUpdateRecipeSerializer, RecipeSerializer
 )
 from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from api.utils.paginators import PageLimitPaginator
+from recipes.models import (
+    AmountIngredient, FavoriteRecipe, Ingredient, Recipe, ShoppingList
+)
 
-from .filters import RecipeFilter
-from .serializers import CreateAndUpdateRecipeSerializer, RecipeSerializer
-from .permissions import OwnerOrReadOnly, ReadOnly
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
