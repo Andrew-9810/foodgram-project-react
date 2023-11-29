@@ -33,10 +33,6 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         """Подписаться на пользователя."""
         author = get_object_or_404(User, id=id)
-        # user = request.user
-
-        # queryset = Follow.objects.all()
-        # serializer = FollowCreateSerializer(queryset, context={'request': request})
         serializer = FollowSerializer(
             author, context={'request': request}
         )
