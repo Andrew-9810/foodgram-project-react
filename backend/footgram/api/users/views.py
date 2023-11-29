@@ -21,32 +21,29 @@ class CustomUserViewSet(UserViewSet):
         """Мои подписки."""
         queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(page, many=True,
-                                      context={'request': request})
+        serializer = FollowSerializer(
+            page, many=True, context={'request': request}
+        )
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True,
-            methods=['POST'],
-            permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, id=None):
+    @action(
+        detail=True, methods=['POST'],
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def subscribe(self, request, id):
         """Подписаться на пользователя."""
-        user = request.user
         author = get_object_or_404(User, id=id)
-        if user == author:
-            return Response({'errors':
-                            'Недопустимо подписаться на себя.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        if Follow.objects.filter(user=user, author=author).exists():
-            return Response({'errors':
-                            'Подписка на автора выполнена!'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        Follow.objects.create(user=user, author=author)
-        serializer = FollowSerializer(author,
-                                      context={'request': request})
+        # user = request.user
+
+        # queryset = Follow.objects.all()
+        # serializer = FollowCreateSerializer(queryset, context={'request': request})
+        serializer = FollowSerializer(
+            author, context={'request': request}
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
-    def delete_subscribe(self, request, id=None):
+    def delete_subscribe(self, request, id):
         """Отписаться от пользователя."""
         user = request.user
         author = get_object_or_404(User, id=id)

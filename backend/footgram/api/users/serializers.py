@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 
 from api.recipes.short_recipe_serializer import ShortRecipeSerializer
+from users.models import Follow
 
 User = get_user_model()
 
@@ -52,8 +53,10 @@ class FollowSerializer(CustomUserSerializer):
     """Сериализатор подписок."""
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
 
     class Meta(CustomUserSerializer.Meta):
+
         fields = (
             'email',
             'id',
@@ -78,18 +81,18 @@ class FollowSerializer(CustomUserSerializer):
         """Получение колличесва рецептов."""
         return obj.recipes.count()
 
-    # def get_email(self, value):
-    #     print(f'#### {value}')
-    #     return value
-
-
-# class ShortRecipeSerializer(serializers.ModelSerializer):
-#     """Рецепты автора, сокращеннный вариант."""
-#     class Meta:
-#         model = Recipe
-#         fields = (
-#             'id',
-#             'name',
-#             'image',
-#             'cooking_time'
-#         )
+    def get_id(self, obj):
+        request = self.context.get('request')
+        if request.method == "POST":
+            user = request.user
+            author = User.objects.get(id=obj.id)
+            if user == author:
+                raise exceptions.ValidationError(
+                    'Недопустимо подписаться на себя.'
+                )
+            if Follow.objects.filter(user=user, author=author).exists():
+                raise exceptions.ValidationError(
+                    'Подписка на автора выполнена!'
+                )
+            Follow.objects.create(user=user, author=author)
+        return obj.id
