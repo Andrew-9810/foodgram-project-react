@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-
 User = get_user_model()
 
 
@@ -121,7 +120,7 @@ class AmountIngredient(models.Model):
     amount = models.PositiveSmallIntegerField(
         validators=(
             MinValueValidator(settings.MIN_VALUE_VALIDATOR),
-            MaxValueValidator(settingsMAX_VALUE_VALIDATOR)
+            MaxValueValidator(settings.MAX_VALUE_VALIDATOR)
         ),
         verbose_name='Количество'
     )
