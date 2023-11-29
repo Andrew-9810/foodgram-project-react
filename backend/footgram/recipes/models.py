@@ -1,7 +1,8 @@
 from colorfield.fields import ColorField
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
+
 from footgram.settings import (
     MAX_LENGTH_50, MAX_LENGTH_200, MIN_VALUE_VALIDATOR, MAX_VALUE_VALIDATOR
 )
