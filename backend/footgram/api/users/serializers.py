@@ -1,8 +1,8 @@
 from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from users import models
 from rest_framework import serializers, exceptions
+from users import models
 
 User = get_user_model()
 
