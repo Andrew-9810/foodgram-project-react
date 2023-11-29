@@ -1,21 +1,21 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from footgram.settings import MAX_LENGTH_150, MAX_LENGTH_254
 
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
     email = models.EmailField(
-        max_length=MAX_LENGTH_254,
+        max_length=settings.MAX_LENGTH_254,
         unique=True,
         verbose_name='Электронная почта'
     )
     first_name = models.CharField(
-        max_length=MAX_LENGTH_150,
+        max_length=settings.MAX_LENGTH_150,
         verbose_name='Имя'
     )
     last_name = models.CharField(
-        max_length=MAX_LENGTH_150,
+        max_length=settings.MAX_LENGTH_150,
         verbose_name='Фамилия'
     )
     USERNAME_FIELD = 'email'
