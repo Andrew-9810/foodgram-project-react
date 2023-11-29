@@ -1,24 +1,24 @@
+import rest_framework
 from api.tags.serializers import TagSerializer
 from api.users.serializers import CustomUserSerializer
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core import validators
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework import exceptions, serializers
 from recipes.models import AmountIngredient, Recipe, Tag, Ingredient
 
 
-class AmountIngredientSerializer(serializers.ModelSerializer):
+class AmountIngredientSerializer(rest_framework.serializers.ModelSerializer):
     """Сериализатор количества ингредиентов в рецепте."""
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField(
+    id = rest_framework.serializers.IntegerField()
+    amount = rest_framework.serializers.IntegerField(
         validators=(
-            MinValueValidator(
+            validators.MinValueValidator(
                 settings.MIN_VALUE_VALIDATOR,
                 message='Количество ингредиентов должно быть не менее 1.'
             ),
-            MaxValueValidator(
+            validators.MaxValueValidator(
                 settings.MAX_VALUE_VALIDATOR,
                 message='Превышен лимит количества ингредиентов.'
             )
@@ -30,11 +30,13 @@ class AmountIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
 
-class FullAmountIngredientSerializer(serializers.ModelSerializer):
+class FullAmountIngredientSerializer(
+    rest_framework.serializers.ModelSerializer
+):
     """Сериализатор Суммы Ингридиетов."""
-    id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name')
-    measurement_unit = serializers.CharField(
+    id = rest_framework.serializers.IntegerField(source='ingredient.id')
+    name = rest_framework.serializers.CharField(source='ingredient.name')
+    measurement_unit = rest_framework.serializers.CharField(
         source='ingredient.measurement_unit'
     )
 
@@ -43,11 +45,11 @@ class FullAmountIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class RecipeSerializer(rest_framework.serializers.ModelSerializer):
     """Сериализатор Рецептов."""
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
-    ingredients = serializers.SerializerMethodField()
+    is_favorited = rest_framework.serializers.SerializerMethodField()
+    is_in_shopping_cart = rest_framework.serializers.SerializerMethodField()
+    ingredients = rest_framework.serializers.SerializerMethodField()
     image = Base64ImageField()
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
@@ -91,18 +93,18 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     """Сериализатор создания и обновления рецепта."""
-    tags = serializers.PrimaryKeyRelatedField(
+    tags = rest_framework.serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all()
     )
     ingredients = AmountIngredientSerializer(many=True)
-    cooking_time = serializers.IntegerField(
+    cooking_time = rest_framework.serializers.IntegerField(
         validators=(
-            MinValueValidator(
+            validators.MinValueValidator(
                 settings.MIN_VALUE_VALIDATOR,
                 message='Время приготовления должно быть не менее 1.'
             ),
-            MaxValueValidator(
+            validators.MaxValueValidator(
                 settings.MAX_VALUE_VALIDATOR,
                 message='Превышен лимит времени приготовления.'
             )
@@ -127,11 +129,11 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     def validate_tags(self, value):
         """Проверка выбора тега."""
         if not value:
-            raise exceptions.ValidationError(
+            raise rest_framework.exceptions.ValidationError(
                 'Нужно добавить хотя бы один тег.'
             )
         if len(value) != len(set(value)):
-            raise exceptions.ValidationError(
+            raise rest_framework.exceptions.ValidationError(
                 'У рецепта не может быть два одинаковых тега.'
             )
         return value
@@ -139,14 +141,14 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     def validate_ingredients(self, value):
         """Проверка выбора одинаковых ингредиетов."""
         if not value:
-            raise exceptions.ValidationError(
+            raise rest_framework.exceptions.ValidationError(
                 'Нужно добавить хотя бы один ингредиент.'
             )
         ingredients = []
         for item in value:
             ingredients.append(item['id'])
         if len(ingredients) != len(set(ingredients)):
-            raise exceptions.ValidationError(
+            raise rest_framework.exceptions.ValidationError(
                 'У рецепта не может быть два одинаковых ингредиента.'
             )
         return value
@@ -154,7 +156,7 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     def validate_image(self, value):
         """Проверка наличия изображения."""
         if not value:
-            raise exceptions.ValidationError(
+            raise rest_framework.exceptions.ValidationError(
                 'Нужно добавить фото рецепта.'
             )
         return value
@@ -163,11 +165,11 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         tags = data.get('tags', None)
         ingredients = data.get('ingredients', None)
         if tags is None:
-            raise exceptions.ValidationError(
+            raise rest_framework.exceptions.ValidationError(
                 'Нужно добавить тег рецепта.'
             )
         if ingredients is None:
-            raise exceptions.ValidationError(
+            raise rest_framework.exceptions.ValidationError(
                 'Нужно добавить ингридиент рецепта.'
             )
         return data
@@ -180,7 +182,7 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             try:
                 ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
             except Http404:
-                raise exceptions.ValidationError(
+                raise rest_framework.exceptions.ValidationError(
                     'Указан несуществующий ингредиент.'
                 )
 
