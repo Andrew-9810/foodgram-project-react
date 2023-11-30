@@ -1,9 +1,10 @@
-from api.tags.serializers import TagSerializer
 from rest_framework import viewsets
-from recipes import models
+
+from api.tags.serializers import TagSerializer
+from recipes.models import Tag
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Вьюсет Тегов."""
-    queryset = models.Tag.objects.all()
+    queryset = Tag.objects.all()
     serializer_class = TagSerializer

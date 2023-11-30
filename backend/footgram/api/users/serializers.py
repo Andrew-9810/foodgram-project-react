@@ -1,8 +1,9 @@
-from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, exceptions
-from users import models
+
+from api.recipes.short_recipe_serializer import ShortRecipeSerializer
+from users.models import Follow
 
 User = get_user_model()
 
@@ -89,9 +90,9 @@ class FollowSerializer(CustomUserSerializer):
                 raise exceptions.ValidationError(
                     'Недопустимо подписаться на себя.'
                 )
-            if models.Follow.objects.filter(user=user, author=author).exists():
+            if Follow.objects.filter(user=user, author=author).exists():
                 raise exceptions.ValidationError(
                     'Подписка на автора выполнена!'
                 )
-            models.Follow.objects.create(user=user, author=author)
+            Follow.objects.create(user=user, author=author)
         return obj.id

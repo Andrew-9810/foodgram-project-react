@@ -1,7 +1,8 @@
+from rest_framework import viewsets
+
 from api.ingredients.filters import IngredientSearchFilter
 from api.ingredients.serializers import IngredientSerializer
 from recipes.models import Ingredient
-from rest_framework import viewsets
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):

@@ -1,12 +1,13 @@
-from api.users.serializers import FollowSerializer
-from api.utils.paginators import PageLimitPaginator
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from users import models
+
+from api.users.serializers import FollowSerializer
+from api.utils.paginators import PageLimitPaginator
+from users.models import Follow
 
 User = get_user_model()
 
@@ -42,10 +43,10 @@ class CustomUserViewSet(UserViewSet):
         """Отписаться от пользователя."""
         user = request.user
         author = get_object_or_404(User, id=id)
-        if not models.Follow.objects.filter(user=user, author=author).exists():
+        if not Follow.objects.filter(user=user, author=author).exists():
             return Response(
                 {'errors': 'Подписка не найдена!'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        models.Follow.objects.get(user=user, author=author).delete()
+        Follow.objects.get(user=user, author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
