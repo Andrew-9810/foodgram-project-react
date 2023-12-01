@@ -1,21 +1,24 @@
 from colorfield.fields import ColorField
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 User = get_user_model()
+NAME_LENGTH = 200
+TAG_INGREDIENT_LENGTH = 50
+MIN_VALUE_VALIDATOR = 1
+MAX_VALUE_VALIDATOR = 32767
 
 
 class Ingredient(models.Model):
     """Модель Ингредиентов."""
     name = models.CharField(
         verbose_name='Ингредиент',
-        max_length=settings.MAX_LENGTH_200
+        max_length=NAME_LENGTH
     )
     measurement_unit = models.CharField(
         verbose_name='Единицы измерения ингредиента',
-        max_length=settings.MAX_LENGTH_50
+        max_length=TAG_INGREDIENT_LENGTH
     )
 
     class Meta:
@@ -38,7 +41,7 @@ class Tag(models.Model):
     """Модель Теги."""
     name = models.CharField(
         verbose_name='Название',
-        max_length=settings.MAX_LENGTH_50,
+        max_length=TAG_INGREDIENT_LENGTH,
         unique=True
     )
     color = ColorField(
@@ -69,7 +72,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         verbose_name='Название',
-        max_length=settings.MAX_LENGTH_200
+        max_length=NAME_LENGTH
     )
     image = models.ImageField(
         verbose_name='Изображение',
@@ -91,8 +94,8 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         validators=(
-            MinValueValidator(settings.MIN_VALUE_VALIDATOR),
-            MaxValueValidator(settings.MAX_VALUE_VALIDATOR)
+            MinValueValidator(MIN_VALUE_VALIDATOR),
+            MaxValueValidator(MAX_VALUE_VALIDATOR)
         ),
         verbose_name='Время приготовления'
     )
@@ -119,8 +122,8 @@ class AmountIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         validators=(
-            MinValueValidator(settings.MIN_VALUE_VALIDATOR),
-            MaxValueValidator(settings.MAX_VALUE_VALIDATOR)
+            MinValueValidator(MIN_VALUE_VALIDATOR),
+            MaxValueValidator(MAX_VALUE_VALIDATOR)
         ),
         verbose_name='Количество'
     )

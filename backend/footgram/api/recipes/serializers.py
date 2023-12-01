@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core import validators
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -7,7 +6,14 @@ from rest_framework import exceptions, serializers
 
 from api.tags.serializers import TagSerializer
 from api.users.serializers import CustomUserSerializer
-from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
+from recipes.models import (
+    AmountIngredient,
+    Ingredient,
+    MAX_VALUE_VALIDATOR,
+    MIN_VALUE_VALIDATOR,
+    Recipe,
+    Tag
+)
 
 
 class AmountIngredientSerializer(serializers.ModelSerializer):
@@ -16,11 +22,11 @@ class AmountIngredientSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField(
         validators=(
             validators.MinValueValidator(
-                settings.MIN_VALUE_VALIDATOR,
+                MIN_VALUE_VALIDATOR,
                 message='Количество ингредиентов должно быть не менее 1.'
             ),
             validators.MaxValueValidator(
-                settings.MAX_VALUE_VALIDATOR,
+                MAX_VALUE_VALIDATOR,
                 message='Превышен лимит количества ингредиентов.'
             )
         )
@@ -100,11 +106,11 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
     cooking_time = serializers.IntegerField(
         validators=(
             validators.MinValueValidator(
-                settings.MIN_VALUE_VALIDATOR,
+                MIN_VALUE_VALIDATOR,
                 message='Время приготовления должно быть не менее 1.'
             ),
             validators.MaxValueValidator(
-                settings.MAX_VALUE_VALIDATOR,
+                MAX_VALUE_VALIDATOR,
                 message='Превышен лимит времени приготовления.'
             )
         )
