@@ -131,33 +131,6 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             'cooking_time'
         )
 
-    def validate_tags(self, value):
-        """Проверка выбора тега."""
-        if not value:
-            raise exceptions.ValidationError(
-                'Нужно добавить хотя бы один тег.'
-            )
-        if len(value) != len(set(value)):
-            raise exceptions.ValidationError(
-                'У рецепта не может быть два одинаковых тега.'
-            )
-        return value
-
-    def validate_ingredients(self, value):
-        """Проверка выбора одинаковых ингредиетов."""
-        if not value:
-            raise exceptions.ValidationError(
-                'Нужно добавить хотя бы один ингредиент.'
-            )
-        ingredients = []
-        for item in value:
-            ingredients.append(item['id'])
-        if len(ingredients) != len(set(ingredients)):
-            raise exceptions.ValidationError(
-                'У рецепта не может быть два одинаковых ингредиента.'
-            )
-        return value
-
     def validate_image(self, value):
         """Проверка наличия изображения."""
         if not value:
@@ -167,20 +140,30 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         return value
 
     def validate(self, data):
+        """Проверка пустых и одинаковых тегов, и ингридиентов."""
         tags = data.get('tags', None)
         ingredients = data.get('ingredients', None)
-        if tags is None:
+        if tags is None or tags == []:
             raise exceptions.ValidationError(
                 'Нужно добавить тег рецепта.'
             )
-        if ingredients is None:
+        if len(tags) != len(set(tags)):
+            raise exceptions.ValidationError(
+                'У рецепта не может быть два одинаковых тега.'
+            )
+        if ingredients is None or ingredients == []:
             raise exceptions.ValidationError(
                 'Нужно добавить ингридиент рецепта.'
+            )
+        ing = [x['id'] for x in ingredients]
+        if len(ing) != len(set(ing)):
+            raise exceptions.ValidationError(
+                'У рецепта не может быть два одинаковых ингредиента.'
             )
         return data
 
     def ingredients_create(self, recipe, ingredients):
-        """Создание ингредиентов."""
+        """Создание записи AmountIngredient."""
         all_obj_amount = []
         for ingredient in ingredients:
             amount = ingredient['amount']
