@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, exceptions
+from rest_framework.validators import UniqueTogetherValidator
 
 from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from users.models import Follow
@@ -49,11 +50,10 @@ class CustomUserSerializer(UserSerializer):
         return False
 
 
-class FollowSerializer(CustomUserSerializer):
+class OutUserSerializer(CustomUserSerializer):
     """Сериализатор подписок."""
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    id = serializers.SerializerMethodField()
 
     class Meta(CustomUserSerializer.Meta):
 
@@ -81,18 +81,29 @@ class FollowSerializer(CustomUserSerializer):
         """Получение колличесва рецептов."""
         return obj.recipes.count()
 
-    def get_id(self, obj):
-        request = self.context.get('request')
-        if request.method == "POST":
-            user = request.user
-            author = User.objects.get(id=obj.id)
-            if user == author:
-                raise exceptions.ValidationError(
-                    'Недопустимо подписаться на себя.'
+
+class FollowSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Follow
+        fields = (
+            'user',
+            'author'
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'author'),
+                message='одписка на автора выполнена!'
+            )
+        ]
+
+    def validate(self, data):
+        user = data['user']
+        author = data['author']
+        if author == user:
+            raise exceptions.ValidationError(
+                'Недопустимо подписаться на себя.'
                 )
-            if Follow.objects.filter(user=user, author=author).exists():
-                raise exceptions.ValidationError(
-                    'Подписка на автора выполнена!'
-                )
-            Follow.objects.create(user=user, author=author)
-        return obj.id
+        return data

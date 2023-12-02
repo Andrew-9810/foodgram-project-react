@@ -120,18 +120,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         """Загрузить список покупок."""
         user = request.user
-        shopping_cart = ShoppingList.objects.filter(user=user)
-        recipes = []
-        for item in shopping_cart:
-            recipes.append(item.recipe.id)
         shopping_list = AmountIngredient.objects.filter(
-            recipe__in=recipes
+            recipe__in=ShoppingList.objects.filter(
+                user=user
+            ).values(
+                'recipe'
+            )
         ).values(
             'ingredient'
         ).annotate(
             amount=Sum('amount')
         )
         shopping_list_text = 'Список покупок: \n'
+
         for item in shopping_list:
             ingredient = Ingredient.objects.get(pk=item['ingredient'])
             amount = item['amount']
@@ -139,6 +140,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f'{ingredient.name}, {amount} '
                 f'{ingredient.measurement_unit}\n'
             )
+
         response = HttpResponse(shopping_list_text, content_type="text/plain")
         response['Content-Disposition'] = (
             'attachment; filename=shopping-list.txt'
