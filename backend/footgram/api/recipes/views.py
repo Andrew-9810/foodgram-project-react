@@ -50,15 +50,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         if serializer.is_valid():
             serializer.save()
-            out_serialize = ShortRecipeSerializer(
+            out_serializer = ShortRecipeSerializer(
                 recipe,
                 context={'request': request}
             )
-            return Response(out_serialize.data, status=status.HTTP_201_CREATED)
+            return Response(
+                out_serializer.data, status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @favorite.mapping.delete
-    def delete_favorite(self, request, pk=None):
+    def delete_favorite(self, request, pk):
         """Удаление рецепта из избранного."""
         user = self.request.user
         recipe = get_object_or_404(Recipe, pk=pk)
@@ -69,9 +71,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             raise exceptions.ValidationError(
                 'Рецепт удален из избраного!'
             )
-        favorite = get_object_or_404(FavoriteRecipe,
-                                     user=user, recipe=recipe)
-        favorite.delete()
+        FavoriteRecipe.objects.filter(
+            user=user,
+            recipe=recipe
+        ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['POST'])
