@@ -10,8 +10,9 @@ from api.recipes.filters import RecipeFilter
 from api.recipes.permissions import OwnerOrReadOnly, ReadOnly
 from api.recipes.serializers import (
     CreateAndUpdateRecipeSerializer,
+    FavoriteRecipeSerializer,
     RecipeSerializer,
-    FavoriteRecipeSerializer
+    ShoppingListSerializer
 )
 from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from api.utils.paginators import PageLimitPaginator
@@ -35,19 +36,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return CreateAndUpdateRecipeSerializer
         return RecipeSerializer
 
-    @action(detail=True, methods=['POST'])
-    def favorite(self, request, pk):
-        """Добавление рецепта в избранное."""
+    def creat_fav_shop_cart(self, request, pk, serializer):
+        """Добавление рецепта в избранное, корзину."""
         try:
             recipe = get_object_or_404(Recipe, pk=pk)
         except Http404:
             raise exceptions.ValidationError(
                 'Указан несуществующий рецепт.'
             )
-        serializer = FavoriteRecipeSerializer(
-            data={'recipe': pk},
-            context={'request': request}
-        )
+        serializer = serializer
         if serializer.is_valid():
             serializer.save()
             out_serializer = ShortRecipeSerializer(
@@ -59,66 +56,61 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @favorite.mapping.delete
-    def delete_favorite(self, request, pk):
-        """Удаление рецепта из избранного."""
-        user = self.request.user
+    def del_fav_shop_cart(self, request, pk, model):
+        """Удалаение рецепта из избраного и корзины."""
+        user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-        if not FavoriteRecipe.objects.filter(
+        if not model.objects.filter(
                 user=user,
                 recipe=recipe
         ).exists():
             raise exceptions.ValidationError(
-                'Рецепт удален из избраного!'
+                'Рецепт удален!'
             )
-        FavoriteRecipe.objects.filter(
+        model.objects.filter(
             user=user,
             recipe=recipe
         ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['POST'])
-    def shopping_cart(self, request, pk=None):
-        """Добавление рецепта в список покупок."""
-        user = self.request.user
-        if not Recipe.objects.filter(pk=pk).exists():
-            raise exceptions.ValidationError(
-                'Попытка добавить несуществующий рецепт в избранное.'
-            )
-        recipe = get_object_or_404(Recipe, pk=pk)
-        if ShoppingList.objects.filter(
-                user=user,
-                recipe=recipe
-        ).exists():
-            raise exceptions.ValidationError(
-                'Рецепт в списке покупок!'
-            )
-        ShoppingList.objects.create(user=user, recipe=recipe)
-        serializer = ShortRecipeSerializer(
-            recipe,
+    def favorite(self, request, pk):
+        """Добавление рецепта в избранное."""
+        serializer = FavoriteRecipeSerializer(
+            data={'recipe': pk},
             context={'request': request}
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.creat_fav_shop_cart(
+            request=request,
+            pk=pk,
+            serializer=serializer
+        )
+
+    @favorite.mapping.delete
+    def delete_favorite(self, request, pk):
+        """Удаление рецепта из избранного."""
+        model = FavoriteRecipe
+        return self.del_fav_shop_cart(pk=pk, request=request, model=model)
+
+    @action(detail=True, methods=['POST'])
+    def shopping_cart(self, request, pk):
+        """Добавление рецепта в список покупок."""
+
+        serializer = ShoppingListSerializer(
+            data={'recipe': pk},
+            context={'request': request}
+        )
+        return self.creat_fav_shop_cart(
+            request=request,
+            pk=pk,
+            serializer=serializer
+        )
 
     @shopping_cart.mapping.delete
-    def delete_shopping_cart(self, request, pk=None):
+    def delete_shopping_cart(self, request, pk):
         """Удаление рецепта из списка покупок."""
-        user = self.request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
-        if not ShoppingList.objects.filter(
-                user=user,
-                recipe=recipe
-        ).exists():
-            raise exceptions.ValidationError(
-                'Рецепта удален из списка покупок!'
-            )
-        shopping_cart = get_object_or_404(
-            ShoppingList,
-            user=user,
-            recipe=recipe
-        )
-        shopping_cart.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        model = ShoppingList
+        return self.del_fav_shop_cart(pk=pk, request=request, model=model)
 
     @action(
         detail=False,
@@ -127,7 +119,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         """Загрузить список покупок."""
-        shopping_cart = ShoppingList.objects.filter(user=self.request.user)
+        user = request.user
+        shopping_cart = ShoppingList.objects.filter(user=user)
         recipes = []
         for item in shopping_cart:
             recipes.append(item.recipe.id)

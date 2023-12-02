@@ -13,7 +13,9 @@ from recipes.models import (
     MAX_VALUE_VALIDATOR,
     MIN_VALUE_VALIDATOR,
     Recipe,
-    Tag, FavoriteRecipe
+    Tag,
+    FavoriteRecipe,
+    ShoppingList
 )
 
 
@@ -225,5 +227,25 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
                 queryset=FavoriteRecipe.objects.all(),
                 fields=('user', 'recipe'),
                 message='Рецепт добавлен в избранное.'
+            )
+        ]
+
+
+class ShoppingListSerializer(serializers.ModelSerializer):
+    """Сериализатор корзины покупок."""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = ShoppingList
+        fields = (
+            'user',
+            'recipe'
+        )
+
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingList.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт добавлен в корзину.'
             )
         ]
