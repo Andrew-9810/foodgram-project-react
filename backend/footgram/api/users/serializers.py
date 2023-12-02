@@ -105,5 +105,5 @@ class FollowSerializer(serializers.ModelSerializer):
         if author == user:
             raise exceptions.ValidationError(
                 'Недопустимо подписаться на себя.'
-                )
+            )
         return data
