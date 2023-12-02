@@ -1,5 +1,5 @@
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, permissions, status, viewsets
@@ -9,7 +9,9 @@ from rest_framework.response import Response
 from api.recipes.filters import RecipeFilter
 from api.recipes.permissions import OwnerOrReadOnly, ReadOnly
 from api.recipes.serializers import (
-    CreateAndUpdateRecipeSerializer, RecipeSerializer
+    CreateAndUpdateRecipeSerializer,
+    RecipeSerializer,
+    FavoriteRecipeSerializer
 )
 from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from api.utils.paginators import PageLimitPaginator
@@ -34,25 +36,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeSerializer
 
     @action(detail=True, methods=['POST'])
-    def favorite(self, request, pk=None):
+    def favorite(self, request, pk):
         """Добавление рецепта в избранное."""
-        user = self.request.user
-        if not Recipe.objects.filter(pk=pk).exists():
+        try:
+            recipe = get_object_or_404(Recipe, pk=pk)
+        except Http404:
             raise exceptions.ValidationError(
-                'Попытка добавить несуществующий рецепт в избранное.'
+                'Указан несуществующий рецепт.'
             )
-        recipe = get_object_or_404(Recipe, pk=pk)
-        if FavoriteRecipe.objects.filter(
-                user=user,
-                recipe=recipe
-        ).exists():
-            raise exceptions.ValidationError('Рецепт добавлен в избранное.')
-        FavoriteRecipe.objects.create(user=user, recipe=recipe)
-        serializer = ShortRecipeSerializer(
-            recipe,
+        serializer = FavoriteRecipeSerializer(
+            data={'recipe': pk},
             context={'request': request}
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            out_serialize = ShortRecipeSerializer(
+                recipe,
+                context={'request': request}
+            )
+            return Response(out_serialize.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk=None):

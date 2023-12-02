@@ -3,6 +3,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import exceptions, serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from api.tags.serializers import TagSerializer
 from api.users.serializers import CustomUserSerializer
@@ -12,7 +13,7 @@ from recipes.models import (
     MAX_VALUE_VALIDATOR,
     MIN_VALUE_VALIDATOR,
     Recipe,
-    Tag
+    Tag, FavoriteRecipe
 )
 
 
@@ -206,3 +207,23 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             context={'request': self.context.get('request')}
         )
         return serializer.data
+
+
+class FavoriteRecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор избранного рецепта."""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = FavoriteRecipe
+        fields = (
+            'user',
+            'recipe'
+        )
+
+        validators = [
+            UniqueTogetherValidator(
+                queryset=FavoriteRecipe.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт добавлен в избранное.'
+            )
+        ]
