@@ -46,8 +46,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-    def del_fav_shop_cart(self, request, pk, model):
+    def delete_favorite_shopping_cart(self, request, pk, model):
         """Удалаение рецепта из избраного и корзины."""
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
@@ -76,7 +75,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         """Удаление рецепта из избранного."""
-        return self.del_fav_shop_cart(
+        return self.delete_favorite_shopping_cart(
             pk=pk, request=request, model=FavoriteRecipe
         )
 
@@ -92,7 +91,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
         """Удаление рецепта из списка покупок."""
-        return self.del_fav_shop_cart(
+        return self.delete_favorite_shopping_cart(
             pk=pk, request=request, model=ShoppingList
         )
 
