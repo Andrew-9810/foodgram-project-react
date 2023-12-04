@@ -5,7 +5,7 @@ from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.users.serializers import FollowSerializer, OutUserSerializer
+from api.users.serializers import FollowSerializer, FollowListSerializer
 from api.utils.paginators import PageLimitPaginator
 from users.models import Follow
 
@@ -21,7 +21,7 @@ class CustomUserViewSet(UserViewSet):
         """Мои подписки."""
         queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
-        serializer = OutUserSerializer(
+        serializer = FollowListSerializer(
             page, many=True, context={'request': request}
         )
         return self.get_paginated_response(serializer.data)
@@ -37,15 +37,11 @@ class CustomUserViewSet(UserViewSet):
             data={'author': id},
             context={'request': request}
         )
-        if serializer.is_valid():
-            serializer.save()
-            out_serializer = OutUserSerializer(
-                author, context={'request': request}
-            )
-            return Response(
-                out_serializer.data, status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED
+        )
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, id):

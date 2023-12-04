@@ -50,7 +50,7 @@ class CustomUserSerializer(UserSerializer):
         return False
 
 
-class OutUserSerializer(CustomUserSerializer):
+class FollowListSerializer(CustomUserSerializer):
     """Сериализатор подписок."""
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -95,7 +95,7 @@ class FollowSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
                 fields=('user', 'author'),
-                message='одписка на автора выполнена!'
+                message='Подписка на автора выполнена!'
             )
         ]
 
@@ -107,3 +107,10 @@ class FollowSerializer(serializers.ModelSerializer):
                 'Недопустимо подписаться на себя.'
             )
         return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        author = instance.author
+        return FollowListSerializer(
+            author, context={'request': request}
+        ).data
