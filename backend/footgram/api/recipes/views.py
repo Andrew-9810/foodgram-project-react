@@ -1,5 +1,5 @@
 from django.db.models import Sum
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, permissions, status, viewsets
@@ -14,7 +14,6 @@ from api.recipes.serializers import (
     RecipeSerializer,
     ShoppingListSerializer
 )
-from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from api.utils.paginators import PageLimitPaginator
 from recipes.models import (
     AmountIngredient, FavoriteRecipe, Ingredient, Recipe, ShoppingList
@@ -36,25 +35,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return CreateAndUpdateRecipeSerializer
         return RecipeSerializer
 
-    def creat_fav_shop_cart(self, request, pk, serializer):
+    def create_favorite_shopping_cart(self, request, pk, class_serializer):
         """Добавление рецепта в избранное, корзину."""
-        try:
-            recipe = get_object_or_404(Recipe, pk=pk)
-        except Http404:
-            raise exceptions.ValidationError(
-                'Указан несуществующий рецепт.'
-            )
-        serializer = serializer
-        if serializer.is_valid():
-            serializer.save()
-            out_serializer = ShortRecipeSerializer(
-                recipe,
-                context={'request': request}
-            )
-            return Response(
-                out_serializer.data, status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        get_object_or_404(Recipe, pk=pk)
+        serializer = class_serializer(
+            data={'recipe': pk},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
     def del_fav_shop_cart(self, request, pk, model):
         """Удалаение рецепта из избраного и корзины."""
@@ -76,41 +67,34 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['POST'])
     def favorite(self, request, pk):
         """Добавление рецепта в избранное."""
-        serializer = FavoriteRecipeSerializer(
-            data={'recipe': pk},
-            context={'request': request}
-        )
-        return self.creat_fav_shop_cart(
+        return self.create_favorite_shopping_cart(
             request=request,
             pk=pk,
-            serializer=serializer
+            class_serializer=FavoriteRecipeSerializer
         )
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         """Удаление рецепта из избранного."""
-        model = FavoriteRecipe
-        return self.del_fav_shop_cart(pk=pk, request=request, model=model)
+        return self.del_fav_shop_cart(
+            pk=pk, request=request, model=FavoriteRecipe
+        )
 
     @action(detail=True, methods=['POST'])
     def shopping_cart(self, request, pk):
         """Добавление рецепта в список покупок."""
-
-        serializer = ShoppingListSerializer(
-            data={'recipe': pk},
-            context={'request': request}
-        )
-        return self.creat_fav_shop_cart(
+        return self.create_favorite_shopping_cart(
             request=request,
             pk=pk,
-            serializer=serializer
+            class_serializer=ShoppingListSerializer
         )
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
         """Удаление рецепта из списка покупок."""
-        model = ShoppingList
-        return self.del_fav_shop_cart(pk=pk, request=request, model=model)
+        return self.del_fav_shop_cart(
+            pk=pk, request=request, model=ShoppingList
+        )
 
     @action(
         detail=False,

@@ -1,10 +1,10 @@
 from django.core import validators
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import exceptions, serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from api.recipes.short_recipe_serializer import ShortRecipeSerializer
 from api.tags.serializers import TagSerializer
 from api.users.serializers import CustomUserSerializer
 from recipes.models import (
@@ -170,13 +170,7 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         all_obj_amount = []
         for ingredient in ingredients:
             amount = ingredient['amount']
-            try:
-                ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
-            except Http404:
-                raise exceptions.ValidationError(
-                    'Указан несуществующий ингредиент.'
-                )
-
+            ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
             obj_amount = AmountIngredient(
                 recipe=recipe,
                 ingredient=ingredient,
@@ -230,6 +224,14 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
             )
         ]
 
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        recipe = instance.recipe
+        return ShortRecipeSerializer(
+            recipe,
+            context={'request': request}
+        ).data
+
 
 class ShoppingListSerializer(serializers.ModelSerializer):
     """Сериализатор корзины покупок."""
@@ -249,3 +251,11 @@ class ShoppingListSerializer(serializers.ModelSerializer):
                 message='Рецепт добавлен в корзину.'
             )
         ]
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        recipe = instance.recipe
+        return ShortRecipeSerializer(
+            recipe,
+            context={'request': request}
+        ).data

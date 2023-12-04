@@ -32,16 +32,14 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscribe(self, request, id):
         """Подписаться на пользователя."""
-        author = get_object_or_404(User, id=id)
+        get_object_or_404(User, id=id)
         serializer = FollowSerializer(
             data={'author': id},
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED
-        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, id):

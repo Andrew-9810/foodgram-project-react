@@ -9,7 +9,6 @@ from .users.views import CustomUserViewSet
 app_name = 'api'
 
 router = routers.DefaultRouter()
-# Могут получать api and api[id]
 router.register('users', CustomUserViewSet)
 router.register('tags', TagViewSet)
 router.register('ingredients', IngredientViewSet)
