@@ -146,7 +146,7 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
         """Проверка пустых и одинаковых тегов, и ингридиентов."""
         tags = data.get('tags', None)
         ingredients = data.get('ingredients', None)
-        if tags is None or tags == []:
+        if not tags:
             raise exceptions.ValidationError(
                 'Нужно добавить тег рецепта.'
             )
@@ -154,12 +154,12 @@ class CreateAndUpdateRecipeSerializer(RecipeSerializer):
             raise exceptions.ValidationError(
                 'У рецепта не может быть два одинаковых тега.'
             )
-        if ingredients is None or ingredients == []:
+        if not ingredients:
             raise exceptions.ValidationError(
                 'Нужно добавить ингридиент рецепта.'
             )
-        ing = [x['id'] for x in ingredients]
-        if len(ing) != len(set(ing)):
+        ingredient_ids = [ingredient['id'] for ingredient in ingredients]
+        if len(ingredient_ids) != len(set(ingredient_ids)):
             raise exceptions.ValidationError(
                 'У рецепта не может быть два одинаковых ингредиента.'
             )
