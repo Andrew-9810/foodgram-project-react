@@ -37,16 +37,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def create_favorite_shopping_cart(self, request, pk, class_serializer):
         """Добавление рецепта в избранное, корзину."""
-        get_object_or_404(Recipe, pk=pk)
         serializer = class_serializer(
             data={'recipe': pk},
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(user=self.request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete_favorite_shopping_cart(self, request, pk, model):
+    def delete_favorite_shopping_cart(self, request, pk, model, message):
         """Удалаение рецепта из избраного и корзины."""
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
@@ -54,9 +53,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 user=user,
                 recipe=recipe
         ).exists():
-            raise exceptions.ValidationError(
-                'Рецепт удален!'
-            )
+            raise exceptions.ValidationError(message)
         model.objects.filter(
             user=user,
             recipe=recipe
@@ -76,7 +73,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def delete_favorite(self, request, pk):
         """Удаление рецепта из избранного."""
         return self.delete_favorite_shopping_cart(
-            pk=pk, request=request, model=FavoriteRecipe
+            pk=pk, request=request, model=FavoriteRecipe,
+            message='Pецепт не добавлен в избранное'
         )
 
     @action(detail=True, methods=['POST'])
@@ -92,7 +90,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def delete_shopping_cart(self, request, pk):
         """Удаление рецепта из списка покупок."""
         return self.delete_favorite_shopping_cart(
-            pk=pk, request=request, model=ShoppingList
+            pk=pk, request=request, model=ShoppingList,
+            message='Pецепт не добавлен в корзину'
         )
 
     @action(
@@ -114,8 +113,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(
             amount=Sum('amount')
         )
-        shopping_list_text = 'Список покупок: \n'
 
+        shopping_list_text = 'Список покупок: \n'
         for item in shopping_list:
             ingredient = Ingredient.objects.get(pk=item['ingredient'])
             amount = item['amount']
