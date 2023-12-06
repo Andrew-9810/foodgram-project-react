@@ -107,20 +107,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 user=user
             ).values(
                 'recipe'
-            )
-        ).values(
-            'ingredient'
-        ).annotate(
-            amount=Sum('amount')
-        )
+            )).select_related('ingredient').all()
 
         shopping_list_text = 'Список покупок: \n'
+
         for item in shopping_list:
-            ingredient = Ingredient.objects.get(pk=item['ingredient'])
-            amount = item['amount']
             shopping_list_text += (
-                f'{ingredient.name}, {amount} '
-                f'{ingredient.measurement_unit}\n'
+                f'{item.ingredient.name}, {item.amount} '
+                f'{item.ingredient.measurement_unit}\n'
             )
 
         response = HttpResponse(shopping_list_text, content_type="text/plain")

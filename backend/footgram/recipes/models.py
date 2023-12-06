@@ -118,7 +118,8 @@ class AmountIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Название',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='ingridient'
     )
     amount = models.PositiveSmallIntegerField(
         validators=(
